@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+
+  --color-primary: #0052FF;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #D8E2FF;
+  --color-on-primary-container: #001A41;
+
+  --color-surface: #F8FAFF;
+  --color-on-surface: #1A1C1E;
+  --color-surface-variant: #E1E2EC;
+  --color-on-surface-variant: #44474F;
+  --color-surface-container-low: #F1F3F9;
+  --color-surface-container: #EBEEF5;
+  --color-surface-container-high: #E5E8F0;
+
+  --color-outline: #74777F;
+  --color-outline-variant: #C4C6D0;
+
+  --color-error: #BA1A1A;
+  --color-on-error: #FFFFFF;
+  
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-xl border border-white/20;
+}
+
+.shadow-soft {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-container-high rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-outline-variant;
+}

@@ -1,0 +1,5 @@
+{
+  "name": "SkyPoint - Registro de Ponto",
+  "description": "Sistema responsivo de registro de ponto com reconhecimento facial, geolocalização e painel de auditoria para RH.",
+  "requestFramePermissions": ["camera", "geolocation"]
+}

@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Profile information for employees and admins",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Full name" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["employee", "admin"] },
+        "employeeId": { "type": "string", "description": "Unique employee identification ID" },
+        "photoUrl": { "type": "string", "description": "Profile picture URL" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role", "employeeId"]
+    },
+    "TimeRecord": {
+      "title": "Time Record",
+      "description": "A single clock-in or clock-out event",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Reference to User uid" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "type": { "type": "string", "enum": ["entry", "exit"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "photoUrl": { "type": "string", "description": "Photo taken at the moment of registration" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "accuracy": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "status": { "type": "string", "enum": ["approved", "divergent"], "description": "Audit status" },
+        "auditNotes": { "type": "string" }
+      },
+      "required": ["userId", "employeeId", "type", "timestamp", "photoUrl", "location"]
+    },
+    "Geofence": {
+      "title": "Geofence Perimeter",
+      "description": "Authorized locations for clocking in",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "radius": { "type": "number", "description": "Radius in meters" }
+      },
+      "required": ["name", "lat", "lng", "radius"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/records/{recordId}": {
+      "schema": "TimeRecord",
+      "description": "Time registration records"
+    },
+    "/geofences/{geofenceId}": {
+      "schema": "Geofence",
+      "description": "Configured geofence perimeters"
+    }
+  }
+}
