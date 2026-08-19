@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Rules for User accounts
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Rules for Punch Records (Time clock entries)
+    match /punchRecords/{recordId} {
+      allow read: if true;
+      allow create: if incoming().userId is string && incoming().photo is string;
+      allow update, delete: if true;
+    }
+
+    // Rules for Company Settings
+    match /companySettings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Default deny for unspecified paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

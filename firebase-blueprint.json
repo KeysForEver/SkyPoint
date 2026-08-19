@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Employee or administrator user profile for SkyPoint",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "username": { "type": "string", "description": "Unique login username", "maxLength": 50 },
+        "name": { "type": "string", "description": "Full name of the employee", "maxLength": 100 },
+        "role": { "type": "string", "description": "User role: admin or employee", "enum": ["admin", "employee"] },
+        "department": { "type": "string", "description": "Department or sector", "maxLength": 80 },
+        "cpf": { "type": "string", "description": "Employee identification document", "maxLength": 30 },
+        "password": { "type": "string", "description": "User password or hash", "maxLength": 100 },
+        "active": { "type": "boolean", "description": "Whether employee is active" },
+        "createdAt": { "type": "string", "description": "Creation timestamp in ISO format" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp in ISO format" }
+      },
+      "required": ["username", "name", "role", "active"]
+    },
+    "PunchRecord": {
+      "title": "PunchRecord",
+      "description": "Time clock punch record with selfie, timestamp, and geolocation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique record ID" },
+        "userId": { "type": "string", "description": "ID of employee who registered point" },
+        "userName": { "type": "string", "description": "Name of the employee at registration", "maxLength": 100 },
+        "userDepartment": { "type": "string", "description": "Department at time of registration", "maxLength": 80 },
+        "type": { "type": "string", "description": "Punch type", "enum": ["entry", "lunch_start", "lunch_end", "exit", "custom"] },
+        "typeLabel": { "type": "string", "description": "Human readable label in Portuguese", "maxLength": 50 },
+        "timestamp": { "type": "string", "description": "ISO timestamp of registration" },
+        "timestampSaoPaulo": { "type": "string", "description": "Formatted timestamp in São Paulo timezone (GMT-3)", "maxLength": 60 },
+        "dateKey": { "type": "string", "description": "YYYY-MM-DD date key in SP timezone", "maxLength": 15 },
+        "photo": { "type": "string", "description": "Compressed base64 selfie data URL" },
+        "latitude": { "type": "number", "description": "GPS latitude" },
+        "longitude": { "type": "number", "description": "GPS longitude" },
+        "accuracy": { "type": "number", "description": "GPS accuracy in meters" },
+        "address": { "type": "string", "description": "Approximate address or coordinates summary", "maxLength": 250 },
+        "isOfflineSynced": { "type": "boolean", "description": "Whether record was registered offline and synced later" },
+        "syncedAt": { "type": "string", "description": "Timestamp when synced to cloud" },
+        "notes": { "type": "string", "description": "Optional notes or remarks", "maxLength": 300 },
+        "deviceInfo": { "type": "string", "description": "User agent or device summary", "maxLength": 200 }
+      },
+      "required": ["userId", "userName", "type", "timestamp", "dateKey", "photo"]
+    },
+    "CompanySettings": {
+      "title": "CompanySettings",
+      "description": "Company configuration and point rules",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Settings ID" },
+        "companyName": { "type": "string", "description": "Company trade name", "maxLength": 100 },
+        "cnpj": { "type": "string", "description": "Company registration number", "maxLength": 30 },
+        "allowOffline": { "type": "boolean", "description": "Whether offline punches are permitted" },
+        "requireLocation": { "type": "boolean", "description": "Whether GPS is strictly required" },
+        "timezone": { "type": "string", "description": "Default timezone", "maxLength": 50 },
+        "updatedAt": { "type": "string", "description": "Last settings update ISO string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Registered system users and employees"
+    },
+    "/punchRecords/{recordId}": {
+      "schema": "PunchRecord",
+      "description": "All employee clock in/out punch records"
+    },
+    "/companySettings/{settingId}": {
+      "schema": "CompanySettings",
+      "description": "Company settings and global preferences"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "SkyPoint - Controle de Ponto",
+  "description": "Sistema de controle de ponto eletrônico com selfie, geolocalização, modo offline com sincronização automática e painel administrativo SkyPoint.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
