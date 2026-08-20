@@ -760,13 +760,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </tbody>
               </table>
             </div>
-
-            {/* Table Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                SkyPoint Engine v2.4.0 — Hosted on Vercel Edge
-              </span>
-            </div>
           </div>
 
         </div>
@@ -835,12 +828,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span>Departamento:</span>
                       <span className="text-slate-800 font-semibold">{u.department || 'Geral'}</span>
                     </div>
-                    {u.cpf && (
-                      <div className="flex justify-between text-slate-500">
-                        <span>CPF:</span>
-                        <span className="text-slate-800 font-mono font-medium">{u.cpf}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between text-slate-500">
                       <span>Total de Batidas:</span>
                       <span className="text-indigo-600 font-bold">{punchCount}</span>

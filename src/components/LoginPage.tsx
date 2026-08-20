@@ -4,8 +4,6 @@ import {
   User as UserIcon, 
   Eye, 
   EyeOff, 
-  Clock, 
-  ShieldCheck, 
   AlertCircle,
   KeyRound,
   ArrowRight
@@ -76,12 +74,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
       setLoading(false);
       onLoginSuccess(matchedUser);
     }, 400);
-  };
-
-  const handleFillAdmin = () => {
-    setUsername('admin');
-    setPassword('admin@123');
-    setErrorMsg(null);
   };
 
   return (
@@ -180,29 +172,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
               )}
             </button>
           </form>
-
-          {/* Quick First-Time Admin Credentials Helper */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <div className="text-left">
-                <div className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Acesso de Administrador:</span>
-                </div>
-                <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                  Login: <strong className="text-slate-800">admin</strong> | Senha: <strong className="text-slate-800">admin@123</strong>
-                </div>
-              </div>
-              <button
-                type="button"
-                id="btn-fill-admin"
-                onClick={handleFillAdmin}
-                className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-indigo-600 rounded-lg text-xs font-semibold border border-slate-200 transition shadow-sm cursor-pointer"
-              >
-                Preencher
-              </button>
-            </div>
-          </div>
 
         </div>
 

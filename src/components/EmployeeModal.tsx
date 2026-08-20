@@ -19,7 +19,6 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [department, setDepartment] = useState('Operações');
-  const [cpf, setCpf] = useState('');
   const [role, setRole] = useState<'admin' | 'employee'>('employee');
   const [active, setActive] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -31,7 +30,6 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
       setUsername(editingUser.username);
       setPassword(editingUser.password);
       setDepartment(editingUser.department || 'Operações');
-      setCpf(editingUser.cpf || '');
       setRole(editingUser.role);
       setActive(editingUser.active);
     } else {
@@ -39,7 +37,6 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
       setUsername('');
       setPassword('');
       setDepartment('Operações');
-      setCpf('');
       setRole('employee');
       setActive(true);
     }
@@ -68,7 +65,6 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
         username: cleanUsername,
         password: cleanPassword,
         department: department.trim() || 'Geral',
-        cpf: cpf.trim() || undefined,
         role,
         active,
       });
@@ -167,35 +163,19 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
             </div>
           </div>
 
-          {/* Department & CPF */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1" htmlFor="emp-dept">
-                Departamento / Setor
-              </label>
-              <input
-                id="emp-dept"
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                placeholder="Ex: TI, Vendas, Logística"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1" htmlFor="emp-cpf">
-                CPF do Funcionário
-              </label>
-              <input
-                id="emp-cpf"
-                type="text"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                placeholder="000.000.000-00"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
-              />
-            </div>
+          {/* Department */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1" htmlFor="emp-dept">
+              Departamento / Setor
+            </label>
+            <input
+              id="emp-dept"
+              type="text"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="Ex: TI, Vendas, Logística"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+            />
           </div>
 
           {/* Role & Status */}

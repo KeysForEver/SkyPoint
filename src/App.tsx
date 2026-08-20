@@ -19,6 +19,7 @@ import { LoginPage } from './components/LoginPage';
 import { PunchClock } from './components/PunchClock';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -198,6 +199,9 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Vercel Analytics */}
+      <Analytics />
 
     </div>
   );
