@@ -5,7 +5,6 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  KeyRound,
   ArrowRight
 } from 'lucide-react';
 import { User } from '../types';
@@ -83,16 +82,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
         {/* Card Container */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
           
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-indigo-600" />
-              <span>Acesso ao Sistema</span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Insira seu login e senha para bater ponto ou acessar o painel administrativo.
-            </p>
-          </div>
-
           {/* Error Message */}
           {errorMsg && (
             <div className="mb-5 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
@@ -106,7 +95,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
             {/* Username Input */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="username-input">
-                Usuário / Login
+                Usuário
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -117,8 +106,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Ex: admin ou seu usuário"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                   autoCapitalize="none"
                   autoComplete="username"
                   required
@@ -140,8 +128,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Sua senha"
-                  className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                   autoComplete="current-password"
                   required
                 />
@@ -166,7 +153,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ users, onLoginSuccess }) =
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Entrar no SkyPoint</span>
+                  <span>ENTRAR</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
