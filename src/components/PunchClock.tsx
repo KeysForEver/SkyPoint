@@ -43,11 +43,13 @@ export const PunchClock: React.FC<PunchClockProps> = ({
   const [punchType, setPunchType] = useState<PunchType>('entry');
   const [notes, setNotes] = useState<string>('');
   const [cameraActive, setCameraActive] = useState<boolean>(false);
+  const [cameraLoading, setCameraLoading] = useState<boolean>(true);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Photo & Location state
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [location, setLocation] = useState<{
     latitude?: number;
     longitude?: number;
@@ -81,32 +83,79 @@ export const PunchClock: React.FC<PunchClockProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Initialize camera stream
+  // Initialize camera stream with robust fallbacks for mobile browsers
   const startCamera = async () => {
+    setCameraLoading(true);
     setCameraError(null);
-    try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
+    // Stop existing stream if any
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Seu navegador não suporta acesso direto à câmera. Use o botão "Tirar Foto" abaixo.');
+      setCameraActive(false);
+      setCameraLoading(false);
+      return;
+    }
+
+    let stream: MediaStream | null = null;
+
+    // Strategy 1: Ideal constraints for mobile front/rear camera
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: facingMode,
+          facingMode: { ideal: facingMode },
           width: { ideal: 640 },
           height: { ideal: 480 },
         },
         audio: false,
       });
+    } catch (err1) {
+      console.warn('Strategy 1 camera attempt failed, trying basic facingMode:', err1);
+      // Strategy 2: Simple facingMode string
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode },
+          audio: false,
+        });
+      } catch (err2) {
+        console.warn('Strategy 2 camera attempt failed, trying fallback video=true:', err2);
+        // Strategy 3: Pure video fallback
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        } catch (err3: any) {
+          console.error('All camera attempts failed:', err3);
+          const isDenied = err3.name === 'NotAllowedError' || err3.name === 'PermissionDeniedError';
+          setCameraError(
+            isDenied
+              ? 'Permissão da câmera bloqueada. Conceda permissão no navegador ou tire uma foto abaixo.'
+              : 'Não foi possível acessar a câmera do dispositivo. Você pode tirar a foto pelo botão abaixo.'
+          );
+          setCameraActive(false);
+          setCameraLoading(false);
+          return;
+        }
+      }
+    }
 
+    if (stream) {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn('Video play catch:', playErr);
+        }
       }
       setCameraActive(true);
-    } catch (err: any) {
-      console.error('Camera access error:', err);
-      setCameraError('Permissão da câmera necessária para registrar a biometria facial.');
-      setCameraActive(false);
+      setCameraLoading(false);
     }
   };
 
@@ -122,13 +171,51 @@ export const PunchClock: React.FC<PunchClockProps> = ({
   // Start camera on mount & change facing mode
   useEffect(() => {
     startCamera();
-    // Pre-fetch geolocation
     loadLocation();
 
     return () => {
       stopCamera();
     };
   }, [facingMode]);
+
+  // Handle native file input capture (100% resilient fallback for mobile)
+  const handleNativeFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        // Draw onto canvas to add timestamp overlay
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width || 640;
+          canvas.height = img.height || 480;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px monospace';
+            ctx.fillText(
+              `SkyPoint | ${currentUser.name} | ${formatSaoPauloDateTime(new Date())}`,
+              12,
+              canvas.height - 14
+            );
+            const formattedData = canvas.toDataURL('image/jpeg', 0.85);
+            setCapturedPhoto(formattedData);
+          } else {
+            setCapturedPhoto(result);
+          }
+        };
+        img.src = result;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Load geolocation
   const loadLocation = async () => {
@@ -366,37 +453,137 @@ export const PunchClock: React.FC<PunchClockProps> = ({
             {/* Camera Viewfinder */}
             <div className="p-6 flex flex-col items-center gap-5">
               
+              {/* Hidden file input for 100% native mobile camera fallback */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handleNativeFileChange}
+              />
+
               <div className="w-full aspect-[3/4] max-h-[380px] bg-slate-900 rounded-2xl relative overflow-hidden flex items-center justify-center border-4 border-slate-100 shadow-inner">
                 
-                {cameraActive ? (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                    <Camera className="w-12 h-12 text-slate-600 mb-2" />
-                    <span className="text-xs">Iniciando câmera...</span>
+                {/* Persistent Video Element - Always Mounted */}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedMetadata={() => {
+                    videoRef.current?.play().catch((e) => console.warn('Autoplay prevented:', e));
+                  }}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${
+                    cameraActive && !capturedPhoto ? 'opacity-100' : 'opacity-0 absolute'
+                  }`}
+                  style={{
+                    transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
+                  }}
+                />
+
+                {/* Captured Photo Preview */}
+                {capturedPhoto && (
+                  <div className="w-full h-full relative">
+                    <img
+                      src={capturedPhoto}
+                      alt="Biometria capturada"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-4 left-4 bg-emerald-600/90 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-md">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Foto Pronta</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCapturedPhoto(null);
+                        startCamera();
+                      }}
+                      className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer backdrop-blur-sm"
+                    >
+                      Tirar Outra
+                    </button>
                   </div>
                 )}
 
-                {/* Subtle Facial Alignment Guide */}
-                <div className="absolute inset-0 border-2 border-indigo-400 opacity-25 pointer-events-none rounded-xl m-4"></div>
+                {/* Camera Loading State */}
+                {cameraLoading && !cameraActive && !capturedPhoto && !cameraError && (
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-slate-300">
+                    <div className="w-10 h-10 border-3 border-white/20 border-t-indigo-500 rounded-full animate-spin mb-3" />
+                    <span className="text-xs font-medium">Iniciando câmera...</span>
+                  </div>
+                )}
 
-                {/* Top Overlay Badge with Live SP REC */}
-                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] text-white flex items-center gap-1.5 font-mono shadow">
-                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>REC {currentTimeStr || '09:41:22'}</span>
-                </div>
+                {/* Camera Error / Permission Fallback State */}
+                {cameraError && !capturedPhoto && (
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-white gap-3 z-10">
+                    <AlertCircle className="w-10 h-10 text-amber-400" />
+                    <p className="text-xs text-slate-200 max-w-[240px]">
+                      {cameraError}
+                    </p>
+                    <div className="flex flex-col w-full gap-2 mt-1">
+                      <button
+                        type="button"
+                        onClick={startCamera}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Tentar Novamente</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>Abrir Câmera do Celular</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-                {/* Location indicator inside video */}
-                <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-[10px] text-white/90 truncate flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-indigo-400 flex-shrink-0" />
-                  <span className="truncate">{location.address || 'Capturando localização GPS...'}</span>
-                </div>
+                {/* Live Overlays (Only when camera active & no static photo) */}
+                {cameraActive && !capturedPhoto && (
+                  <>
+                    {/* Facial Alignment Guide */}
+                    <div className="absolute inset-0 border-2 border-indigo-400/40 pointer-events-none rounded-xl m-4" />
+
+                    {/* Top Overlay Badge with Live SP REC */}
+                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] text-white flex items-center gap-1.5 font-mono shadow">
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                      <span>REC {currentTimeStr || '09:41:22'}</span>
+                    </div>
+
+                    {/* Location indicator inside video */}
+                    <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-[10px] text-white/90 truncate flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                      <span className="truncate">{location.address || 'Capturando localização GPS...'}</span>
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+              {/* Native Camera Quick Button (Optional Alternative on Mobile) */}
+              <div className="w-full flex justify-between items-center px-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 transition cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Usar app de câmera nativo</span>
+                </button>
+                {cameraActive && !capturedPhoto && (
+                  <button
+                    type="button"
+                    onClick={() => takeSelfie()}
+                    className="text-[11px] text-slate-500 hover:text-slate-700 font-medium transition cursor-pointer"
+                  >
+                    Congelar foto
+                  </button>
+                )}
               </div>
 
               {/* Time & GPS Info */}
